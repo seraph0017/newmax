@@ -7,17 +7,22 @@ from flask import Flask
 from ext import db, mail, cache
 
 
-with open('config.yml','rb') as f:
-    config_file = f.read()
+def create_app():
+    conf = get_config()
+    app = Flask(__name__)
+    app.config.update(conf['ENV'][os.getenv('ENV')])
+    db.init_app(app)
+    mail.init_app(app)
+    cache.init_app(app,config=conf['CACHE_CONFIG'])
+    return app
 
-conf = yaml.load(config_file)
 
-app = Flask(__name__)
-app.config.update(conf['ENV'][os.getenv('ENV')])
+def get_config():
+    with open('config.yml','rb') as f:
+        config_file = f.read()
+    conf = yaml.load(config_file)
+    return conf
 
 
 
-
-db.init_app(app)
-mail.init_app(app)
-cache.init_app(app,config=conf['CACHE_CONFIG'])
+app = create_app()
